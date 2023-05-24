@@ -1,0 +1,23 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+#### R SCRIPT 
+library(odbc) # Read to and write from SQL
+library(DBI)
+library(dplyr)
+library(readxl) #Read Excel files
+library(writexl) #Export Excel files
+library(dbplyr)
+
+source_file <- "//Dchs-shares01/mhddata/SPE/Reporting/Tyler/Competency Referral High Utilizer Analyses/Jun 2021 Refresh/High Utilizer Program Enrollment, Jan-Jun 2021.xlsx"
+high_uti_list <- read_excel(source_file, sheet = "Sheet4")
+
+kcid_list <- high_uti_list %>%
+            dplyr::select(kcid,kcid2) %>%
+            dplyr::filter(!is.na(kcid))
+            
+conn <- DBI::dbConnect(odbc::odbc(), dsn = 'HHSAW_prod')
+
+copy_to(hhsaw_prod, kcid_list, "##kcid_list", temporary = FALSE, overwrite = TRUE )
